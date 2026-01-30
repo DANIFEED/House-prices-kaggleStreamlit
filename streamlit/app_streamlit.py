@@ -148,7 +148,7 @@ class HousePricesSmartImputer(BaseEstimator, TransformerMixin):
 @st.cache_resource
 def load_model():
     """Загружает модель с обработкой разных форматов"""
-    model_file = "models/ml_baseline_rfr.pkl"
+    model_file = joblib.load("models/ml_baseline_rfr.pkl")
     if not os.path.exists(model_file):
         return None, f"❌ Файл '{model_file}' не найден. Убедитесь, что модель в той же папке."
     
