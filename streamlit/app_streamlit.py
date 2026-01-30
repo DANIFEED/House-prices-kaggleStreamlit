@@ -151,9 +151,9 @@ def load_model():
     try:
         # Пробуем несколько возможных расположений
         possible_paths = [
-            "ml_baseline_rfr.pkl",
-            "./ml_baseline_rfr.pkl",
-            os.path.join(os.getcwd(), "ml_baseline_rfr.pkl")
+            "ml_model.pkl",
+            "./ml_model.pkl",
+            os.path.join(os.getcwd(), "ml_mode.pkl")
         ]
         
         model = None
