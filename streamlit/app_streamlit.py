@@ -214,8 +214,7 @@ def preprocess_simple(df):
         cols_to_drop = [col for col in FEATURES_TO_DROP if col in df.columns]
         if cols_to_drop:
             df = df.drop(columns=cols_to_drop)
-            st.info(f"ℹ️ Удалены колонки: {', '.join(cols_to_drop)}")
-        
+
         numeric_cols = df.select_dtypes(include=[np.number]).columns
         for col in numeric_cols:
             if col in df.columns:
