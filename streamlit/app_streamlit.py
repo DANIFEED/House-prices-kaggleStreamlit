@@ -145,29 +145,58 @@ class HousePricesSmartImputer(BaseEstimator, TransformerMixin):
         else:
             raise ValueError("Feature names not available")
 
+import os
+import sys
+import joblib
+import pickle
+import streamlit as st
+
 @st.cache_resource
 def load_model():
     """Загружает модель с обработкой разных форматов"""
-    model_file = r"models/ml_model.pkl"
-    if not os.path.exists(model_file):
-        return None, f"❌ Файл '{model_file}' не найден. Убедитесь, что модель в той же папке."
+    
+    # Определяем путь к модели
+    base_dir = os.path.dirname(__file__)  # Папка, где находится скрипт
+    model_file = os.path.join(base_dir, "ml_model.pkl")
+    
+    # Альтернативный вариант - проверка разных возможных путей
+    possible_paths = [
+        "ml_model.pkl",                     # Текущая папка
+        "models/ml_model.pkl",              # Папка models
+        os.path.join(base_dir, "ml_model.pkl"),
+        os.path.join(base_dir, "models", "ml_model.pkl"),
+    ]
+    
+    # Ищем файл
+    for model_file in possible_paths:
+        if os.path.exists(model_file):
+            st.success(f"✅ Файл найден: {model_file}")
+            break
+    else:
+        st.error("❌ Модель не найдена ни по одному из путей")
+        return None, "Модель не найдена"
     
     try:
+
         model = joblib.load(model_file)
-        return model, "✅ Модель загружена успешно"
-    except:
+        return model, "✅ Модель загружена успешно (joblib)"
+    except Exception as e1:
         try:
             with open(model_file, 'rb') as f:
                 model = pickle.load(f)
-            return model, "✅ Модель загружена успешно"
-        except:
+            return model, "✅ Модель загружена успешно (pickle)"
+        except Exception as e2:
             try:
                 with open(model_file, 'rb') as f:
                     model = pickle.load(f, encoding='latin1')
-                return model, "✅ Модель загружена"
-            except Exception as e:
-                return None, f"❌ Ошибка загрузки модели: {str(e)[:100]}"
-
+                return model, "✅ Модель загружена (latin1)"
+            except Exception as e3:
+                error_msg = f"❌ Ошибка загрузки модели:\n"
+                error_msg += f"Joblib: {str(e1)[:100]}\n"
+                error_msg += f"Pickle: {str(e2)[:100]}\n"
+                error_msg += f"Pickle latin1: {str(e3)[:100]}"
+                return None, error_msg
+            
 def preprocess_simple(df):
     """Упрощенная обработка данных для House Prices"""
     df = df.copy()
