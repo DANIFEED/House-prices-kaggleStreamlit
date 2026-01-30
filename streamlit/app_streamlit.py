@@ -147,37 +147,27 @@ class HousePricesSmartImputer(BaseEstimator, TransformerMixin):
 
 @st.cache_resource
 def load_model():
-    """Загружает модель"""
+    """Загружает модель с обработкой разных форматов"""
+    model_file = r"models/ml_model.pkl"
+    if not os.path.exists(model_file):
+        return None, f"❌ Файл '{model_file}' не найден. Убедитесь, что модель в той же папке."
+    
     try:
-        # Пробуем несколько возможных расположений
-        possible_paths = [
-            "ml_model.pkl",
-            "./ml_model.pkl",
-            os.path.join(os.getcwd(), "ml_mode.pkl")
-        ]
-        
-        model = None
-        for model_path in possible_paths:
+        model = joblib.load(model_file)
+        return model, "✅ Модель загружена успешно"
+    except:
+        try:
+            with open(model_file, 'rb') as f:
+                model = pickle.load(f)
+            return model, "✅ Модель загружена успешно"
+        except:
             try:
-                if os.path.exists(model_path):
-                    model = joblib.load(model_path)
-                    st.success(f"Модель найдена по пути: {model_path}")
-                    return model, "✅ Модель загружена успешно"
-            except:
-                try:
-                    with open(model_path, 'rb') as f:
-                        model = pickle.load(f)
-                    return model, "✅ Модель загружена через pickle"
-                except:
-                    continue
-        
-        if model is None:
-            # Проверяем содержимое директории
-            files = os.listdir('.')
-            return None, f"❌ Модель не найдена. Файлы в директории: {files}"
-            
-    except Exception as e:
-        return None, f"❌ Ошибка: {str(e)}"
+                with open(model_file, 'rb') as f:
+                    model = pickle.load(f, encoding='latin1')
+                return model, "✅ Модель загружена"
+            except Exception as e:
+                return None, f"❌ Ошибка загрузки модели: {str(e)[:100]}"
+
 def preprocess_simple(df):
     """Упрощенная обработка данных для House Prices"""
     df = df.copy()
